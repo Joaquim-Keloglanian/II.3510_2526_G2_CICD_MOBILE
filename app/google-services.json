@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "595931653764",
+    "project_id": "deviseapp-804c8",
+    "storage_bucket": "deviseapp-804c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595931653764:android:b6dc80492e5f215de744d1",
+        "android_client_info": {
+          "package_name": "com.example.deviseapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAl5Y3Fn0m1qePPh9iFNHAqnX_QUKyDoIU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
