@@ -9,6 +9,13 @@ on:
 jobs:
   build-test-distribute:
     runs-on: ubuntu-latest
+    env:
+      FIREBASE_DISTRIBUTION_ENABLED: "true"
+      GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+      FIREBASE_APP_ID_ANDROID: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+      FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
+      FIREBASE_RELEASE_NOTES: "CI build - automated"
 
     steps:
       - name: Checkout
@@ -24,30 +31,41 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build, Lint, Test
+      # Créer google-services.json depuis le secret
+      - name: Create google-services.json
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        run: |
+          echo "${{ env.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services.json
+
+      - name: Build, Lint, Test & Assemble Release
         run: |
           ./gradlew clean
-          ./gradlew lint test assembleDebug
-
-      # (Optionnel) Recréer google-services.json depuis un secret base64
-      # - name: Create google-services.json
-      #   if: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 != '' }}
-      #   run: |
-      #     echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services.json
+          ./gradlew lint
+          ./gradlew test
+          ./gradlew assembleRelease
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-release
+          path: app/build/outputs/apk/release/app-release.apk
+
+      - name: Create Firebase service account file
+        if: ${{ env.FIREBASE_DISTRIBUTION_ENABLED == 'true' && env.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
+        run: |
+          mkdir -p .firebase
+          echo '${{ env.FIREBASE_SERVICE_ACCOUNT_JSON }}' > .firebase/service-account.json
+
+      - name: Install Firebase CLI
+        if: ${{ env.FIREBASE_DISTRIBUTION_ENABLED == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: curl -sL https://firebase.tools | bash
 
       - name: Distribute to Firebase App Distribution
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: ${{ secrets.FIREBASE_TESTER_GROUPS }} # ex: "qa,dev" ou laisse vide et utilise testers
-          testers: ${{ secrets.FIREBASE_TESTERS }}       # ex: "ton.email@exemple.com"
-          file: app/build/outputs/apk/debug/app-debug.apk
-          releaseNotes: "CI build from GitHub Actions"
+        if: ${{ env.FIREBASE_DISTRIBUTION_ENABLED == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: .firebase/service-account.json
+        run: |
+          firebase appdistribution:distribute app/build/outputs/apk/release/app-release.apk \
+            --app ${{ env.FIREBASE_APP_ID_ANDROID }} \
+            --groups "${{ env.FIREBASE_TESTERS }}" \
+            --release-notes "${{ env.FIREBASE_RELEASE_NOTES }}"
