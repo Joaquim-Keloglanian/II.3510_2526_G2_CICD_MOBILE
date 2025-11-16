@@ -138,11 +138,11 @@ class MainActivity : ComponentActivity() {
         val fromPos = findPositionByCode(selectedFromCode)
         val toPos = findPositionByCode(selectedToCode)
         currencyAdapter?.getItem(fromPos)?.let { from ->
-            currencyFromInput.setText(from.label, false)
+            currencyFromInput.setText("${from.flag} ${from.code} - ${from.name}", false)
             selectedFromCode = from.code
         }
         currencyAdapter?.getItem(toPos)?.let { to ->
-            currencyToInput.setText(to.label, false)
+            currencyToInput.setText("${to.flag} ${to.code} - ${to.name}", false)
             selectedToCode = to.code
         }
         viewModel.onAmountChanged(
