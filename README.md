@@ -1,4 +1,6 @@
+<!-- omit in toc -->
 # CI/CD Mobile — Student Guide
+<!-- omit in toc -->
 ### GitHub Actions • Fastlane • Firebase App Distribution
 
 This guide will walk you through the three steps required to complete the CI/CD pipeline for the Android demo project.
@@ -8,6 +10,11 @@ By the end, you will:
 *   Configure GitHub Actions environment secrets
 *   Complete the missing parts of the workflow file: `CICD_Mobile/CurrencyConverterI18N/.github/workflows/android-ci.yml`
 
+---
+- [✅ 1. Create a Firebase Project](#-1-create-a-firebase-project)
+- [✅ 2. Create GitHub Environment \& Add Secrets](#-2-create-github-environment--add-secrets)
+- [✅ 3. Complete the GitHub Workflow File](#-3-complete-the-github-workflow-file)
+- [🎉 You’re Done!](#-youre-done)
 ---
 
 ### ✅ 1. Create a Firebase Project
